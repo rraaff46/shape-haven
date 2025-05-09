@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <title>My Three.js Project</title>
+    <style>
+        body {
+            margin: 0;
+            overflow: hidden;
+            background: #474747;
+        }
+
+        canvas {
+            display: block;
+        }
+    </style>
+</head>
+<body>
+<!-- Three.js library -->
+<script src="https://unpkg.com/three@0.160.0/build/three.min.js"></script>
+
+
+<script>
+
+    // Setup
+    const scene = new THREE.Scene();
+
+
+    const camera = new THREE.PerspectiveCamera(
+        75,                                    // Field of view (angle of vision)
+        window.innerWidth / window.innerHeight, // Aspect ratio
+        0.1,                                   // Near clipping plane
+        1000                                   // Far clipping plane
+    );
+
+    const renderer = new THREE.WebGLRenderer({alpha: true, antialias: true});
+    renderer.setSize(window.innerWidth, window.innerHeight); // Fullscreen size
+    document.body.appendChild(renderer.domElement); // Add canvas to page
+
+    // Creating a cube
+    const geometry = new THREE.BoxGeometry(); // Shape: cube
+    const material = new THREE.MeshStandardMaterial({color: 0xd5aeeb}); // Appearance: green
+    const cube = new THREE.Mesh(geometry, material); // Combine shape + appearance
+    scene.add(cube); // Add the cube to the scene
+
+    // Render the scene
+    camera.position.z = 3; // Move the camera back so we can see the cube
+
+
+    const raycaster = new THREE.Raycaster();
+    const mouse = new THREE.Vector2();
+    let isDragging = false;
+    let previousMouseX = 0;
+    let previousMouseY = 0;
+
+
+    window.addEventListener('click', (event) => {
+        // convert mouse position to "normalized device coordinates"
+        mouse.x = (event.clientX / window.innerWidth) * 2 - 1;
+        mouse.y = -(event.clientY / window.innerHeight) * 2 + 1;
+
+        raycaster.setFromCamera(mouse, camera);
+
+        const intersects = raycaster.intersectObjects(scene.children);
+
+        if (intersects.length > 0) {
+            const hitObject = intersects[0].object;
+            console.log('You clicked on:', hitObject);
+
+            // change to a random color
+            const randomColor = Math.floor(Math.random() * 16777215);
+            hitObject.material.color.set(randomColor);
+        }
+    });
+
+    window.addEventListener('mousedown', (event) => {
+        isDragging = true;
+        previousMouseX = event.clientX;
+        previousMouseY = event.clientY;
+    });
+
+    window.addEventListener('mouseup', () => {
+        isDragging = false;
+    });
+
+    window.addEventListener('mousemove', (event) => {
+        if (isDragging) {
+            const deltaX = event.clientX - previousMouseX;
+            const deltaY = event.clientY - previousMouseY;
+            previousMouseX = event.clientX;
+            previousMouseY = event.clientY;
+
+
+            // Rotate the cube based on mouse movement
+            cube.rotation.x += deltaY * 0.005;
+            cube.rotation.y += deltaX * 0.005;
+
+        }
+    });
+
+    // Adding light now
+    const light = new THREE.DirectionalLight(0xffffff, 1);
+    light.position.set(1, 1, 1); // shines from top-right-front
+    scene.add(light);
+
+    // And backlighit
+    const backLight = new THREE.DirectionalLight(0xffffff, 0.5)
+    backLight.position.set(-1, -1, -1);
+
+
+    animate()
+
+    // Functions
+
+    function animate() {
+        requestAnimationFrame(animate); // Keep calling this function on every frame (60fps)
+        renderer.render(scene, camera); // Re-draw the scene each frame
+    }
+
+</script>
+
+</body>
+</html>
